@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -16,6 +17,8 @@ public class Menu : MonoBehaviour
   public Text textTime;
   public Text textTotalTiles;
   public Text textTilesInPlace;
+
+  public GameObject LoadingScreen;
 
   IEnumerator FadeInUI(GameObject panel, float fadeInDuration = 2.0f)
   {
@@ -99,6 +102,25 @@ public class Menu : MonoBehaviour
 
   public void OnClickPlayAgain()
   {
+    
     SceneManager.LoadScene("Scene_JigsawGame");
   }
+
+  public void OnCloseButtonClick(){
+
+    GameApp.Instance.SecondsSinceStart = 0;
+    GameApp.Instance.TotalTilesInCorrectPosition = 0;
+    Tile.tilesSorting.mSortIndices=new List<SpriteRenderer>();
+    // if(GameApp.Instance!=null){
+    //   Destroy(GameApp.Instance.gameObject);
+    // }
+     SceneManager.LoadScene("MainMenu");
+  }
+
+  public void SaveGame(){
+
+  }
+
+
+
 }

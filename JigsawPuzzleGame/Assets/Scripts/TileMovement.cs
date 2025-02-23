@@ -36,6 +36,7 @@ public class TileMovement : MonoBehaviour
 
     // For sorting of tiles.
     Tile.tilesSorting.BringToTop(mSpriteRenderer);
+    GameObject.FindFirstObjectByType<BoardGen>().selectedTile=transform;
   }
 
   private void OnMouseDrag()
@@ -59,7 +60,7 @@ public class TileMovement : MonoBehaviour
       return;
     }
     float dist = (transform.position - GetCorrectPosition()).magnitude;
-    if(dist < 20.0f)
+    if(dist < 20.0f && transform.rotation.z==0)
     {
       transform.position = GetCorrectPosition();
       onTileInPlace?.Invoke(this);

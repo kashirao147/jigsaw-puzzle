@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class TilesSorting
 {
-  private List<SpriteRenderer> mSortIndices = new List<SpriteRenderer>();
+  public List<SpriteRenderer> mSortIndices = new List<SpriteRenderer>();
 
   public TilesSorting()
   {

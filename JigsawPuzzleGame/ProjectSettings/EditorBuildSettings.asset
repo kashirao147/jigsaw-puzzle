@@ -6,6 +6,9 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
+    path: Assets/Scenes/MainMenu.unity
+    guid: 8bde024fc762e5e41a8a7626f7c97633
+  - enabled: 1
     path: Assets/Scenes/Scene_JigsawGame.unity
     guid: 756323005715c1b42a3939a0a73baa8f
   - enabled: 1

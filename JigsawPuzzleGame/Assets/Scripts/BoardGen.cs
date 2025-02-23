@@ -2,15 +2,19 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class BoardGen : MonoBehaviour
 {
+
+  PuzzleSaveData getSavedData;
   private string imageFilename;
   Sprite mBaseSpriteOpaque;
   Sprite mBaseSpriteTransparent;
 
   GameObject mGameObjectOpaque;
   GameObject mGameObjectTransparent;
+
 
   public float ghostTransparency = 0.1f;
 
@@ -28,9 +32,69 @@ public class BoardGen : MonoBehaviour
   private List<Rect> regions = new List<Rect>();
   private List<Coroutine> activeCoroutines = new List<Coroutine>();
 
+  [Header("Rotate Tile")]
+  public Transform selectedTile;
+
+
+
+  Texture2D Resize(Texture2D source, int newWidth, int newHeight)
+    {
+        RenderTexture rt = new RenderTexture(newWidth, newHeight, 32);
+        RenderTexture.active = rt;
+
+        Graphics.Blit(source, rt);
+
+        Texture2D result = new Texture2D(newWidth, newHeight, TextureFormat.RGBA32, false);
+        result.ReadPixels(new Rect(0, 0, newWidth, newHeight), 0, 0);
+        result.Apply();
+
+        RenderTexture.active = null;
+        rt.Release();
+
+        return result;
+    }
+  
+
+
+
   Sprite LoadBaseTexture()
   {
-    Texture2D tex = SpriteUtils.LoadTexture(imageFilename);
+     Texture2D tex ;
+    if(PlayerPrefs.GetInt("LoadSavedGame")==1){
+      menu.LoadingScreen.SetActive(true);
+      LoadSavedGame();
+       tex = SpriteUtils.LoadTexture(getSavedData.imagePath);
+
+    }
+    else{
+
+      tex = SpriteUtils.LoadTexture(imageFilename);
+    }
+
+    int selectedLevel =PlayerPrefs.GetInt("SelectedLevel");
+     switch (selectedLevel)
+        {
+            case 1:
+                 tex = Resize(tex, 600,600);
+                break;
+            case 2:
+                 tex = Resize(tex, 800,800);
+                break;
+            case 3:
+                 tex = Resize(tex, 1000,1000);
+                break;
+            case 4:
+                 tex = Resize(tex, 1300,1300);
+                break;
+            case 5:
+                 tex = Resize(tex, 2000,2000);
+                break;
+            default:
+                 tex = Resize(tex, 600,600);
+                break;
+        }
+    
+   
     if (!tex.isReadable)
     {
       Debug.Log("Error: Texture is not readable");
@@ -80,6 +144,9 @@ public class BoardGen : MonoBehaviour
     return sprite;
   }
 
+
+
+
   // Start is called before the first frame update
   void Start()
   {
@@ -100,7 +167,7 @@ public class BoardGen : MonoBehaviour
     mGameObjectOpaque.gameObject.SetActive(false);
 
     SetCameraPosition();
-
+  
     // Create the Jigsaw tiles.
     //CreateJigsawTiles();
     StartCoroutine(Coroutine_CreateJigsawTiles());
@@ -143,10 +210,11 @@ public class BoardGen : MonoBehaviour
   void SetCameraPosition()
   {
     Camera.main.transform.position = new Vector3(mBaseSpriteOpaque.texture.width / 2,
-      mBaseSpriteOpaque.texture.height / 2, -10.0f);
+      mBaseSpriteOpaque.texture.height / 2, -50.0f);
     //Camera.main.orthographicSize = mBaseSpriteOpaque.texture.width / 2;
     int smaller_value = Mathf.Min(mBaseSpriteOpaque.texture.width, mBaseSpriteOpaque.texture.height);
     Camera.main.orthographicSize = smaller_value * 0.8f;
+    
   }
 
   public static GameObject CreateGameObjectFromTile(Tile tile)
@@ -196,8 +264,9 @@ public class BoardGen : MonoBehaviour
     }
 
     // Enable the bottom panel and set the onlcick delegate to the play button.
-    menu.SetEnableBottomPanel(true);
-    menu.btnPlayOnClick = ShuffleTiles;
+    //menu.SetEnableBottomPanel(true);
+    //menu.btnPlayOnClick = ShuffleTiles;
+    ShuffleTiles();
   }
 
   IEnumerator Coroutine_CreateJigsawTiles()
@@ -225,8 +294,9 @@ public class BoardGen : MonoBehaviour
     }
 
     // Enable the bottom panel and set the delegate to button play on click.
-    menu.SetEnableBottomPanel(true);
-    menu.btnPlayOnClick = ShuffleTiles;
+    //menu.SetEnableBottomPanel(true);
+    ShuffleTiles();
+    //menu.btnPlayOnClick = ShuffleTiles;
 
   }
 
@@ -309,6 +379,47 @@ public class BoardGen : MonoBehaviour
   void Update()
   {
 
+
+  if (selectedTile != null)
+{
+    SpriteRenderer spriteRenderer = selectedTile.GetComponent<SpriteRenderer>();
+    Vector3 pivotOffset = spriteRenderer.bounds.extents*2; // Half-size of the sprite
+    float currentRotation = selectedTile.eulerAngles.z; // Get current rotation
+
+    if (Input.GetKeyDown(KeyCode.RightArrow)) // Rotate Clockwise
+    {
+        currentRotation -= 90;
+        if (currentRotation < 0) currentRotation += 360; // Keep within 0-360 range
+
+        // Adjust position based on new rotation
+        Vector3 positionOffset = Vector3.zero;
+        if (currentRotation == 270) positionOffset = new Vector3(0, pivotOffset.y, 0); // -90°
+        else if (currentRotation == 180) positionOffset = new Vector3(pivotOffset.x, 0, 0); // -180°
+        else if (currentRotation == 90) positionOffset = new Vector3(0, -pivotOffset.y, 0); // 90°
+        else if (currentRotation == 0) positionOffset = new Vector3(-pivotOffset.x, 0, 0); // 0°
+
+        selectedTile.position += positionOffset;
+        selectedTile.rotation = Quaternion.Euler(0, 0, currentRotation);
+    }
+    else if (Input.GetKeyDown(KeyCode.LeftArrow)) // Rotate Counterclockwise
+    {
+        currentRotation += 90;
+        if (currentRotation >= 360) currentRotation -= 360; // Keep within 0-360 range
+
+        // Adjust position based on new rotation (inverse of right rotation)
+        Vector3 positionOffset = Vector3.zero;
+        if (currentRotation == 90) positionOffset = new Vector3(pivotOffset.x,0, 0);
+        else if (currentRotation == 180) positionOffset = new Vector3(0, pivotOffset.y, 0);
+        else if (currentRotation == 270) positionOffset = new Vector3(-pivotOffset.x, 0, 0);
+        else if (currentRotation == 0) positionOffset = new Vector3(0, -pivotOffset.y, 0);
+
+        selectedTile.position += positionOffset;
+        selectedTile.rotation = Quaternion.Euler(0, 0, currentRotation);
+    }
+}
+
+
+
   }
 
   #region Shuffling related codes
@@ -363,7 +474,7 @@ public class BoardGen : MonoBehaviour
         yield return null;
       }
     }
-
+   
     OnFinishedShuffling();
   }
 
@@ -377,11 +488,18 @@ public class BoardGen : MonoBehaviour
     activeCoroutines.Clear();
 
     menu.SetEnableBottomPanel(false);
-    StartCoroutine(Coroutine_CallAfterDelay(() => menu.SetEnableTopPanel(true), 1.0f));
+    StartCoroutine(Coroutine_CallAfterDelay(() =>{
+    menu.SetEnableTopPanel(true);  
+    
+    if(PlayerPrefs.GetInt("LoadSavedGame")==1){
+      SetLoadPiecesPositions(getSavedData.pieces); 
+    }
+    
+    }, 1.0f));
     GameApp.Instance.TileMovementEnabled = true;
 
     StartTimer();
-
+   // Debug.Log("The Items in teh list : "+Tile.tilesSorting.mSortIndices.Count);
     for(int i = 0; i < numTileX; ++i)
     {
       for(int j = 0; j < numTileY; ++j)
@@ -389,11 +507,14 @@ public class BoardGen : MonoBehaviour
         TileMovement tm = mTileGameObjects[i, j].GetComponent<TileMovement>();
         tm.onTileInPlace += OnTileInPlace;
         SpriteRenderer spriteRenderer = tm.gameObject.GetComponent<SpriteRenderer>();
+       // Debug.Log(tm.gameObject.name+ "   "+ spriteRenderer);
+
         Tile.tilesSorting.BringToTop(spriteRenderer);
       }
     }
 
     menu.SetTotalTiles(numTileX * numTileY);
+   
   }
 
   IEnumerator Coroutine_CallAfterDelay(System.Action function, float delay)
@@ -455,7 +576,75 @@ public class BoardGen : MonoBehaviour
       // Reset the values.
       GameApp.Instance.SecondsSinceStart = 0;
       GameApp.Instance.TotalTilesInCorrectPosition = 0;
+
+      if(PlayerPrefs.GetInt("LoadSavedGame", 0)==1){
+        PlayerPrefs.SetInt("gamesaved",0);
+      }
+
+      if(PlayerPrefs.GetInt("SelectedLevel")==PlayerPrefs.GetInt("UnlockedLevels")){
+        PlayerPrefs.GetInt("UnlockedLevels", PlayerPrefs.GetInt("SelectedLevel")%5+1);
+        PlayerPrefs.GetInt("SelectedLevel", PlayerPrefs.GetInt("UnlockedLevels"));
+      }
+      else{
+         PlayerPrefs.GetInt("SelectedLevel", PlayerPrefs.GetInt("SelectedLevel")%5+1);
+      }
     }
     menu.SetTilesInPlace(GameApp.Instance.TotalTilesInCorrectPosition);
   }
+
+  public void SaveGameProgress(){
+    PuzzleSaveData data=new PuzzleSaveData();
+    data.imagePath=imageFilename;
+    data.Time=GameApp.Instance.SecondsSinceStart;
+    data.LevelNumber=PlayerPrefs.GetInt("SelectedLevel");
+    foreach (Transform child in parentForTiles)
+    {
+            PuzzlePieceData piecedata=new PuzzlePieceData();
+            piecedata.name=child.name;
+            Debug.Log(child.name+ "  "+child.position+"  "+child.rotation);
+            piecedata.transform=new SerializableTransform(child);
+            piecedata.isMoveable=child.GetComponent<TileMovement>()?true:false;
+            
+            
+            data.pieces.Add(piecedata);
+
+           
+    }
+
+    PuzzleSaveSystem.SaveGame(data);
+    Debug.Log("Game Saved success");
+    PlayerPrefs.SetInt("gamesaved",1);
+
+  }
+
+
+  public void LoadSavedGame(){
+    getSavedData=PuzzleSaveSystem.LoadGame();
+    GameApp.Instance.SecondsSinceStart=getSavedData.Time;
+    PlayerPrefs.SetInt("SelectedLevel",getSavedData.LevelNumber);
+  }
+
+
+  public void SetLoadPiecesPositions(List<PuzzlePieceData> pieceData){
+    int i=0;
+       foreach (Transform child in parentForTiles)
+        {
+          if(pieceData[i].name.Equals(child.name)){
+          Debug.Log(pieceData[i].name+ "  "+pieceData[i].transform.posX+"  "+pieceData[i].transform.posY+"  "+pieceData[i].transform.posZ);
+            
+              pieceData[i].transform.ApplyToTransform(child);
+              if(!pieceData[i].isMoveable){
+                OnTileInPlace(child.GetComponent<TileMovement>());
+              }
+          }
+          i++;
+        }
+
+
+         menu.LoadingScreen.SetActive(false);
+  }
+
+
+
+
 }

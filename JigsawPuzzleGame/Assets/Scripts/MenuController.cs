@@ -28,12 +28,19 @@ public class MenuController : MonoBehaviour
             SaveGameButton.SetActive(true);
         }
         PlayerPrefs.SetInt("LoadSavedGame", 0);
-        unlockedLevels = PlayerPrefs.GetInt("UnlockedLevels", 5);
+
+
+        if(!PlayerPrefs.HasKey("UnlockedLevels")){
+                PlayerPrefs.SetInt("UnlockedLevels", 1);
+        }
+        unlockedLevels = PlayerPrefs.GetInt("UnlockedLevels", 1);
+        
         if(!PlayerPrefs.HasKey("SelectedLevel")){
 
          PlayerPrefs.SetInt("SelectedLevel",unlockedLevels);
         }
         SelectLevel(PlayerPrefs.GetInt("SelectedLevel"));
+   
         //LevelNumber.text="Level NUMBER"+unlockedLevels;
         UpdateLevelSelectionUI();
         
@@ -91,7 +98,7 @@ public class MenuController : MonoBehaviour
     {
         if (unlockedLevels < levelButtons.Length)
         {
-            unlockedLevels++;
+                unlockedLevels++;
             PlayerPrefs.SetInt("UnlockedLevels", unlockedLevels);
             PlayerPrefs.Save();
             UpdateLevelSelectionUI();

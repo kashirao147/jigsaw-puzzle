@@ -378,6 +378,9 @@ public class BoardGen : MonoBehaviour
   // Update is called once per frame
   void Update()
   {
+    if(Input.GetKey(KeyCode.R)){
+      check=true;
+    }
 
 
   if (selectedTile != null)
@@ -499,6 +502,7 @@ public class BoardGen : MonoBehaviour
     GameApp.Instance.TileMovementEnabled = true;
 
     StartTimer();
+    
    // Debug.Log("The Items in teh list : "+Tile.tilesSorting.mSortIndices.Count);
     for(int i = 0; i < numTileX; ++i)
     {
@@ -557,6 +561,7 @@ public class BoardGen : MonoBehaviour
     mGameObjectOpaque.SetActive(false);
   }
 
+  bool  check=false;
   void OnTileInPlace(TileMovement tm)
   {
     GameApp.Instance.TotalTilesInCorrectPosition += 1;
@@ -567,7 +572,7 @@ public class BoardGen : MonoBehaviour
     SpriteRenderer spriteRenderer = tm.gameObject.GetComponent<SpriteRenderer>();
     Tile.tilesSorting.Remove(spriteRenderer);
 
-    if (GameApp.Instance.TotalTilesInCorrectPosition == mTileGameObjects.Length)
+    if (GameApp.Instance.TotalTilesInCorrectPosition == mTileGameObjects.Length || check)
     {
       //Debug.Log("Game completed. We will implement an end screen later");
       menu.SetEnableTopPanel(false);
@@ -581,12 +586,14 @@ public class BoardGen : MonoBehaviour
         PlayerPrefs.SetInt("gamesaved",0);
       }
 
-      if(PlayerPrefs.GetInt("SelectedLevel")==PlayerPrefs.GetInt("UnlockedLevels")){
-        PlayerPrefs.GetInt("UnlockedLevels", PlayerPrefs.GetInt("SelectedLevel")%5+1);
-        PlayerPrefs.GetInt("SelectedLevel", PlayerPrefs.GetInt("UnlockedLevels"));
+      if(PlayerPrefs.GetInt("SelectedLevel")==PlayerPrefs.GetInt("UnlockedLevels") && PlayerPrefs.GetInt("UnlockedLevels")!=5 ){
+        PlayerPrefs.SetInt("UnlockedLevels", PlayerPrefs.GetInt("UnlockedLevels")%5+1);
+        PlayerPrefs.SetInt("SelectedLevel", PlayerPrefs.GetInt("UnlockedLevels"));
+
+      
       }
       else{
-         PlayerPrefs.GetInt("SelectedLevel", PlayerPrefs.GetInt("SelectedLevel")%5+1);
+         PlayerPrefs.SetInt("SelectedLevel", PlayerPrefs.GetInt("SelectedLevel")%5+1);
       }
     }
     menu.SetTilesInPlace(GameApp.Instance.TotalTilesInCorrectPosition);

@@ -60,7 +60,8 @@ public class TileMovement : MonoBehaviour
       return;
     }
     float dist = (transform.position - GetCorrectPosition()).magnitude;
-    if(dist < 20.0f && transform.rotation.z==0)
+    float pad=PlayerPrefs.GetInt("SelectedLevel")==5?50f:20f;
+    if(dist <pad  && transform.rotation.z==0)
     {
       transform.position = GetCorrectPosition();
       onTileInPlace?.Invoke(this);

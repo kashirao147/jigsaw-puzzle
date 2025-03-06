@@ -13,13 +13,13 @@ public class GameApp : Patterns.Singleton<GameApp>
 
   int imageIndex = 0;
 
-  public string GetJigsawImageName()
+  public string GetJigsawImageName(int selectedLevel)
   {
-    string imageName = jigsawImageNames[imageIndex++];
-    if(imageIndex == jigsawImageNames.Count)
-    {
-      imageIndex = 0;
-    }
+    string imageName = jigsawImageNames[selectedLevel-1];
+    // if(imageIndex == jigsawImageNames.Count)
+    // {
+    //   imageIndex = 0;
+    // }
     return imageName;
   }
 }

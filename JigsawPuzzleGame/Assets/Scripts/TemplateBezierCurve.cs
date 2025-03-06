@@ -43,7 +43,7 @@ public class TemplateBezierCurve : MonoBehaviour
   public Color LineColor = new Color(0.5f, 0.5f, 0.5f, 0.8f);
   public Color BezierCurveColor = new Color(0.5f, 0.6f, 0.8f, 0.8f);
 
-  // Let's create a function to create the line renderer.
+  
   private LineRenderer CreateLine()
   {
     GameObject obj = new GameObject();
@@ -56,7 +56,7 @@ public class TemplateBezierCurve : MonoBehaviour
     return lr;
   }
 
-  // Start is called before the first frame update
+
   void Start()
   {
     // Here we will create the actual lines.
@@ -77,7 +77,7 @@ public class TemplateBezierCurve : MonoBehaviour
     }
   }
 
-  // Update is called once per frame
+ 
   void Update()
   {
     // We will now draw the lines every frame.

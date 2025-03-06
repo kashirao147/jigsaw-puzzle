@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Xml.Schema;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -75,13 +76,13 @@ public class BoardGen : MonoBehaviour
      switch (selectedLevel)
         {
             case 1:
-                 tex = Resize(tex, 600,600);
+                 tex = Resize(tex, 1100,600);
                 break;
             case 2:
-                 tex = Resize(tex, 800,800);
+                 tex = Resize(tex, 1400,800);
                 break;
             case 3:
-                 tex = Resize(tex, 1000,1000);
+                 tex = Resize(tex, 1800,1000);
                 break;
             case 4:
                  tex = Resize(tex, 1300,1300);
@@ -150,7 +151,7 @@ public class BoardGen : MonoBehaviour
   // Start is called before the first frame update
   void Start()
   {
-    imageFilename = GameApp.Instance.GetJigsawImageName();
+    imageFilename = GameApp.Instance.GetJigsawImageName(PlayerPrefs.GetInt("SelectedLevel"));
 
     mBaseSpriteOpaque = LoadBaseTexture();
     mGameObjectOpaque = new GameObject();
@@ -213,7 +214,7 @@ public class BoardGen : MonoBehaviour
       mBaseSpriteOpaque.texture.height / 2, -50.0f);
     //Camera.main.orthographicSize = mBaseSpriteOpaque.texture.width / 2;
     int smaller_value = Mathf.Min(mBaseSpriteOpaque.texture.width, mBaseSpriteOpaque.texture.height);
-    Camera.main.orthographicSize = smaller_value * 0.8f;
+    Camera.main.orthographicSize = smaller_value * 1f;
     
   }
 
@@ -378,58 +379,63 @@ public class BoardGen : MonoBehaviour
   // Update is called once per frame
   void Update()
   {
-    if(Input.GetKey(KeyCode.R)){
-      check=true;
-    }
+    // if(Input.GetKey(KeyCode.R)){
+    //   check=true;
+    // }
 
 
-  if (selectedTile != null)
-{
-    SpriteRenderer spriteRenderer = selectedTile.GetComponent<SpriteRenderer>();
-    Vector3 pivotOffset = spriteRenderer.bounds.extents*2; // Half-size of the sprite
-    float currentRotation = selectedTile.eulerAngles.z; // Get current rotation
+//   if (selectedTile != null)
+// {
+//     SpriteRenderer spriteRenderer = selectedTile.GetComponent<SpriteRenderer>();
+//     Vector3 pivotOffset = spriteRenderer.bounds.extents*2; // Half-size of the sprite
+//     float currentRotation = selectedTile.eulerAngles.z; // Get current rotation
 
-    if (Input.GetKeyDown(KeyCode.RightArrow)) // Rotate Clockwise
-    {
-        currentRotation -= 90;
-        if (currentRotation < 0) currentRotation += 360; // Keep within 0-360 range
+//     if (Input.GetKeyDown(KeyCode.Mouse0)) // Rotate Clockwise
+//     {
+//         currentRotation -= 90;
+//         if (currentRotation < 0) currentRotation += 360; // Keep within 0-360 range
 
-        // Adjust position based on new rotation
-        Vector3 positionOffset = Vector3.zero;
-        if (currentRotation == 270) positionOffset = new Vector3(0, pivotOffset.y, 0); // -90°
-        else if (currentRotation == 180) positionOffset = new Vector3(pivotOffset.x, 0, 0); // -180°
-        else if (currentRotation == 90) positionOffset = new Vector3(0, -pivotOffset.y, 0); // 90°
-        else if (currentRotation == 0) positionOffset = new Vector3(-pivotOffset.x, 0, 0); // 0°
+//         // Adjust position based on new rotation
+//         Vector3 positionOffset = Vector3.zero;
+//         if (currentRotation == 270) positionOffset = new Vector3(0, pivotOffset.y, 0); // -90°
+//         else if (currentRotation == 180) positionOffset = new Vector3(pivotOffset.x, 0, 0); // -180°
+//         else if (currentRotation == 90) positionOffset = new Vector3(0, -pivotOffset.y, 0); // 90°
+//         else if (currentRotation == 0) positionOffset = new Vector3(-pivotOffset.x, 0, 0); // 0°
 
-        selectedTile.position += positionOffset;
-        selectedTile.rotation = Quaternion.Euler(0, 0, currentRotation);
-    }
-    else if (Input.GetKeyDown(KeyCode.LeftArrow)) // Rotate Counterclockwise
-    {
-        currentRotation += 90;
-        if (currentRotation >= 360) currentRotation -= 360; // Keep within 0-360 range
+//         selectedTile.position += positionOffset;
+//         selectedTile.rotation = Quaternion.Euler(0, 0, currentRotation);
+//     }
+//     // else if (Input.GetKeyDown(KeyCode.LeftArrow)) // Rotate Counterclockwise
+//     // {
+//     //     currentRotation += 90;
+//     //     if (currentRotation >= 360) currentRotation -= 360; // Keep within 0-360 range
 
-        // Adjust position based on new rotation (inverse of right rotation)
-        Vector3 positionOffset = Vector3.zero;
-        if (currentRotation == 90) positionOffset = new Vector3(pivotOffset.x,0, 0);
-        else if (currentRotation == 180) positionOffset = new Vector3(0, pivotOffset.y, 0);
-        else if (currentRotation == 270) positionOffset = new Vector3(-pivotOffset.x, 0, 0);
-        else if (currentRotation == 0) positionOffset = new Vector3(0, -pivotOffset.y, 0);
+//     //     // Adjust position based on new rotation (inverse of right rotation)
+//     //     Vector3 positionOffset = Vector3.zero;
+//     //     if (currentRotation == 90) positionOffset = new Vector3(pivotOffset.x,0, 0);
+//     //     else if (currentRotation == 180) positionOffset = new Vector3(0, pivotOffset.y, 0);
+//     //     else if (currentRotation == 270) positionOffset = new Vector3(-pivotOffset.x, 0, 0);
+//     //     else if (currentRotation == 0) positionOffset = new Vector3(0, -pivotOffset.y, 0);
 
-        selectedTile.position += positionOffset;
-        selectedTile.rotation = Quaternion.Euler(0, 0, currentRotation);
-    }
-}
+//     //     selectedTile.position += positionOffset;
+//     //     selectedTile.rotation = Quaternion.Euler(0, 0, currentRotation);
+//     // }
+// }
 
 
 
   }
 
   #region Shuffling related codes
-
-  private IEnumerator Coroutine_MoveOverSeconds(GameObject objectToMove, Vector3 end, float seconds)
+  int CountRandom=0;
+  private IEnumerator Coroutine_MoveOverSeconds(GameObject objectToMove, Vector3 end, float seconds,bool ShouldRotate)
   {
     float elaspedTime = 0.0f;
+    if(ShouldRotate){
+
+    objectToMove.GetComponent<TileMovement>().RandomRotaion();
+    CountRandom++;
+    }
     Vector3 startingPosition = objectToMove.transform.position;
     while(elaspedTime < seconds)
     {
@@ -442,7 +448,7 @@ public class BoardGen : MonoBehaviour
     objectToMove.transform.position = end;
   }
 
-  void Shuffle(GameObject obj)
+  void Shuffle(GameObject obj, bool Shouldshuffle)
   {
     if(regions.Count == 0)
     {
@@ -455,7 +461,7 @@ public class BoardGen : MonoBehaviour
     float y = UnityEngine.Random.Range(regions[regionIndex].yMin, regions[regionIndex].yMax);
 
     Vector3 pos = new Vector3(x, y, 0.0f);
-    Coroutine moveCoroutine = StartCoroutine(Coroutine_MoveOverSeconds(obj, pos, 1.0f));
+    Coroutine moveCoroutine = StartCoroutine(Coroutine_MoveOverSeconds(obj, pos, 1.0f,Shouldshuffle));
     activeCoroutines.Add(moveCoroutine);
   }
 
@@ -465,7 +471,9 @@ public class BoardGen : MonoBehaviour
     {
       for(int j = 0; j < numTileY; ++j)
       {
-        Shuffle(mTileGameObjects[i, j]);
+        bool shouldRotate = UnityEngine.Random.value < 0.2f; // 20% chance to rotate
+        Shuffle(mTileGameObjects[i, j], shouldRotate);
+      
         yield return null;
       }
     }
@@ -500,7 +508,7 @@ public class BoardGen : MonoBehaviour
     
     }, 1.0f));
     GameApp.Instance.TileMovementEnabled = true;
-
+    Debug.Log(" tOTAL SUGGLE "+CountRandom);
     StartTimer();
     
    // Debug.Log("The Items in teh list : "+Tile.tilesSorting.mSortIndices.Count);

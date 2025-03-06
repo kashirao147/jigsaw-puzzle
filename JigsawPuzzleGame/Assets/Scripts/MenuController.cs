@@ -75,7 +75,7 @@ public class MenuController : MonoBehaviour
         selectedLevel = level;
         PlayerPrefs.SetInt("SelectedLevel",level);
         
-        LevelNumber.text="Level NUMBER"+selectedLevel;
+        LevelNumber.text="Level NUMBER "+selectedLevel;
        for(int i=0;i<levelButtons.Length;i++){
             if(selectedLevel==i+1){
                 levelButtons[i].gameObject.GetComponent<Image>().sprite=LeveSprite[1];
@@ -110,5 +110,10 @@ public class MenuController : MonoBehaviour
         PlayerPrefs.SetInt("LoadSavedGame", 1);
         LoadSelectedLevel();
          
+    }
+
+
+    public void Exit(){
+        Application.Quit();
     }
 }

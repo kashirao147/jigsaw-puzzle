@@ -106,6 +106,12 @@ public class Menu : MonoBehaviour
     SceneManager.LoadScene("Scene_JigsawGame");
   }
 
+  public void OnClickPlayNextLevel()
+  {
+    PlayerPrefs.SetInt("LoadSavedGame",0);
+    SceneManager.LoadScene("Scene_JigsawGame");
+  }
+
   public void OnCloseButtonClick(){
 
     GameApp.Instance.SecondsSinceStart = 0;

@@ -57,7 +57,60 @@ public class TileMovement : MonoBehaviour
 
         Vector3 curScreenPoint = new Vector3(Input.mousePosition.x, Input.mousePosition.y, 0.0f);
         Vector3 curPosition = Camera.main.ScreenToWorldPoint(curScreenPoint) + mOffset;
+
+            // Get screen bounds in world space
+    Vector3 minBounds = Camera.main.ViewportToWorldPoint(new Vector3(0, 0, curScreenPoint.z));
+    Vector3 maxBounds = Camera.main.ViewportToWorldPoint(new Vector3(1, 1, curScreenPoint.z));
+
+    // Get the size of the jigsaw piece in world space
+    float pieceWidth = GetComponent<SpriteRenderer>().bounds.size.x;
+    float pieceHeight = GetComponent<SpriteRenderer>().bounds.size.y;
+
+    // Calculate the anchor position based on rotation
+    Vector3 anchorOffset = Vector3.zero;
+    float rotation = transform.eulerAngles.z;
+   
+
+    if (rotation == 0)
+    {
+      
+        // Bottom-left anchor (default)
+        
+        curPosition.x = Mathf.Clamp(curPosition.x, minBounds.x, maxBounds.x - pieceWidth);
+        curPosition.y = Mathf.Clamp(curPosition.y, minBounds.y, maxBounds.y - pieceHeight);
+        
+    }
+    else if (rotation == 90 )
+    {
+  
+         curPosition.x = Mathf.Clamp(curPosition.x, minBounds.x+pieceHeight, maxBounds.x );
+        curPosition.y = Mathf.Clamp(curPosition.y, minBounds.y, maxBounds.y - pieceHeight);
+       
+        
+    }
+    else if (rotation == 180 )
+    {
+
+         curPosition.x = Mathf.Clamp(curPosition.x, minBounds.x+pieceHeight, maxBounds.x );
+        curPosition.y = Mathf.Clamp(curPosition.y, minBounds.y+pieceHeight, maxBounds.y );
+        
+       
+    }
+    else if (rotation == 270 )
+    {
+  
+         curPosition.x = Mathf.Clamp(curPosition.x, minBounds.x, maxBounds.x - pieceWidth);
+        curPosition.y = Mathf.Clamp(curPosition.y, minBounds.y+pieceHeight, maxBounds.y );
+      
+        
+    }
+
+    
+
+  
         transform.position = curPosition;
+
+    
         if(tempTransform!=transform.position){
           isDragging = true; // Dragging is happening
          
@@ -76,11 +129,13 @@ public class TileMovement : MonoBehaviour
         if (dist < pad && transform.rotation.z == 0)
         {
             transform.position = GetCorrectPosition();
+             transform.eulerAngles=new Vector3(0,0,0);
             onTileInPlace?.Invoke(this);
+            return;
         }
 
         // Only rotate if the tile was NOT dragged
-        if (!isDragging)
+        if (!isDragging )
         {
             RotateTile();
         }
@@ -108,8 +163,11 @@ public class TileMovement : MonoBehaviour
         transform.rotation = Quaternion.Euler(0, 0, currentRotation);
     }
 
-    void Update()
-    {
-        // No need for Update() in this case
-    }
+    // void Update()
+    // {
+    //    if(Input.GetKey(KeyCode.P)){
+    //         transform.position=GetCorrectPosition();
+    //         transform.eulerAngles=new Vector3(0,0,0);
+    //    }
+    // }
 }

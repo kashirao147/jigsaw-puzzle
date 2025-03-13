@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Xml.Schema;
 using UnityEngine;
 using UnityEngine.UIElements;
+using UnityEngine.UI;
 
 public class BoardGen : MonoBehaviour
 {
@@ -15,6 +16,9 @@ public class BoardGen : MonoBehaviour
 
   GameObject mGameObjectOpaque;
   GameObject mGameObjectTransparent;
+
+
+ 
 
 
   public float ghostTransparency = 0.1f;
@@ -35,7 +39,7 @@ public class BoardGen : MonoBehaviour
 
   [Header("Rotate Tile")]
   public Transform selectedTile;
-
+  public Transform SaveButton; 
 
 
   Texture2D Resize(Texture2D source, int newWidth, int newHeight)
@@ -73,27 +77,29 @@ public class BoardGen : MonoBehaviour
     }
 
     int selectedLevel =PlayerPrefs.GetInt("SelectedLevel");
-     switch (selectedLevel)
-        {
-            case 1:
-                 tex = Resize(tex, 1100,600);
-                break;
-            case 2:
-                 tex = Resize(tex, 1400,800);
-                break;
-            case 3:
-                 tex = Resize(tex, 1800,1000);
-                break;
-            case 4:
-                 tex = Resize(tex, 1300,1300);
-                break;
-            case 5:
-                 tex = Resize(tex, 2000,2000);
-                break;
-            default:
-                 tex = Resize(tex, 600,600);
-                break;
-        }
+    Vector2 Dimension=GameApp.Instance.GetJigsawImageDimension(selectedLevel);
+    tex = Resize(tex, (int)Dimension.y*100,(int)Dimension.x*100);
+    //  switch (selectedLevel)
+    //     {
+    //         case 1:
+    //              tex = Resize(tex, 500,300);
+    //             break;
+    //         case 2:
+    //              tex = Resize(tex, 1400,800);
+    //             break;
+    //         case 3:
+    //              tex = Resize(tex, 1800,1000);
+    //             break;
+    //         case 4:
+    //              tex = Resize(tex, 1300,1300);
+    //             break;
+    //         case 5:
+    //              tex = Resize(tex, 2000,2000);
+    //             break;
+    //         default:
+    //              tex = Resize(tex, 600,600);
+    //             break;
+    //     }
     
    
     if (!tex.isReadable)
@@ -151,6 +157,8 @@ public class BoardGen : MonoBehaviour
   // Start is called before the first frame update
   void Start()
   {
+    SaveButton.GetComponent<UnityEngine.UI.Button>().interactable = false;
+
     imageFilename = GameApp.Instance.GetJigsawImageName(PlayerPrefs.GetInt("SelectedLevel"));
 
     mBaseSpriteOpaque = LoadBaseTexture();
@@ -427,14 +435,14 @@ public class BoardGen : MonoBehaviour
   }
 
   #region Shuffling related codes
-  int CountRandom=0;
+  
   private IEnumerator Coroutine_MoveOverSeconds(GameObject objectToMove, Vector3 end, float seconds,bool ShouldRotate)
   {
     float elaspedTime = 0.0f;
     if(ShouldRotate){
 
-    objectToMove.GetComponent<TileMovement>().RandomRotaion();
-    CountRandom++;
+    //objectToMove.GetComponent<TileMovement>().RandomRotaion();
+   
     }
     Vector3 startingPosition = objectToMove.transform.position;
     while(elaspedTime < seconds)
@@ -452,8 +460,8 @@ public class BoardGen : MonoBehaviour
   {
     if(regions.Count == 0)
     {
-      regions.Add(new Rect(-300.0f, -100.0f, 50.0f, numTileY * Tile.tileSize));
-      regions.Add(new Rect((numTileX+1) * Tile.tileSize, -100.0f, 50.0f, numTileY * Tile.tileSize));
+      regions.Add(new Rect(-100.0f-PlayerPrefs.GetInt("SelectedLevel")*100, -100.0f, 50.0f, numTileY * Tile.tileSize));
+      regions.Add(new Rect((numTileX+PlayerPrefs.GetInt("SelectedLevel")) * Tile.tileSize, -100.0f, 50.0f, numTileY * Tile.tileSize));
     }
 
     int regionIndex = UnityEngine.Random.Range(0, regions.Count);
@@ -472,6 +480,10 @@ public class BoardGen : MonoBehaviour
       for(int j = 0; j < numTileY; ++j)
       {
         bool shouldRotate = UnityEngine.Random.value < 0.2f; // 20% chance to rotate
+        if(shouldRotate){
+
+       // mTileGameObjects[i, j].GetComponent<TileMovement>().RandomRotaion();
+        }
         Shuffle(mTileGameObjects[i, j], shouldRotate);
       
         yield return null;
@@ -508,7 +520,7 @@ public class BoardGen : MonoBehaviour
     
     }, 1.0f));
     GameApp.Instance.TileMovementEnabled = true;
-    Debug.Log(" tOTAL SUGGLE "+CountRandom);
+   // Debug.Log(" tOTAL SUGGLE "+CountRandom);
     StartTimer();
     
    // Debug.Log("The Items in teh list : "+Tile.tilesSorting.mSortIndices.Count);
@@ -525,9 +537,45 @@ public class BoardGen : MonoBehaviour
       }
     }
 
+    SaveButton.GetComponent<UnityEngine.UI.Button>().interactable = true;
+    if(PlayerPrefs.GetInt("LoadSavedGame")!=1){
+
+     menu.InstructionsWindow.SetActive(true);
+    }
+    // for(int i = 0; i < numTileX; ++i)
+    // {
+    //   for(int j = 0; j < numTileY; ++j)
+    //   {
+    //     bool shouldRotate = UnityEngine.Random.value < 0.2f; // 20% chance to rotate
+    //     if(shouldRotate){
+
+    //     mTileGameObjects[i, j].GetComponent<TileMovement>().RandomRotaion();
+    //     }
+        
+    //   }
+    // }
+    StartCoroutine(RandomRotate());
     menu.SetTotalTiles(numTileX * numTileY);
    
   }
+
+  IEnumerator  RandomRotate(){
+    yield return new WaitForSeconds(2f);
+    for(int i = 0; i < numTileX; ++i)
+    {
+      for(int j = 0; j < numTileY; ++j)
+      {
+        bool shouldRotate = UnityEngine.Random.value < 0.2f; // 20% chance to rotate
+        if(shouldRotate){
+
+        mTileGameObjects[i, j].GetComponent<TileMovement>().RandomRotaion();
+        }
+        
+      }
+    }
+  }
+
+
 
   IEnumerator Coroutine_CallAfterDelay(System.Action function, float delay)
   {
@@ -575,10 +623,12 @@ public class BoardGen : MonoBehaviour
     GameApp.Instance.TotalTilesInCorrectPosition += 1;
 
     tm.enabled = false;
+   
     Destroy(tm);
 
     SpriteRenderer spriteRenderer = tm.gameObject.GetComponent<SpriteRenderer>();
     Tile.tilesSorting.Remove(spriteRenderer);
+    spriteRenderer.sortingOrder=-1500;
 
     if (GameApp.Instance.TotalTilesInCorrectPosition == mTileGameObjects.Length || check)
     {
@@ -590,8 +640,9 @@ public class BoardGen : MonoBehaviour
       GameApp.Instance.SecondsSinceStart = 0;
       GameApp.Instance.TotalTilesInCorrectPosition = 0;
 
-      if(PlayerPrefs.GetInt("LoadSavedGame", 0)==1){
+      if(PlayerPrefs.GetInt("LoadSavedGame")==1){
         PlayerPrefs.SetInt("gamesaved",0);
+       // PlayerPrefs.SetInt("LoadSavedGame",0);
       }
 
       if(PlayerPrefs.GetInt("SelectedLevel")==PlayerPrefs.GetInt("UnlockedLevels") && PlayerPrefs.GetInt("UnlockedLevels")!=5 ){

@@ -19,6 +19,8 @@ public class Menu : MonoBehaviour
   public Text textTilesInPlace;
 
   public GameObject LoadingScreen;
+  
+  public GameObject InstructionsWindow;
 
   IEnumerator FadeInUI(GameObject panel, float fadeInDuration = 2.0f)
   {
